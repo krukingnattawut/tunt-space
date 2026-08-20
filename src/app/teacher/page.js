@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import FeedList from "../components/FeedList";
 
 const MOOD_LABEL = { great: "😄 สดใส", good: "🙂 ปกติ", neutral: "😐 เฉยๆ", tired: "😔 เหนื่อยใจ", bad: "😢 แย่มาก" };
 
@@ -13,6 +14,7 @@ const RISK_STYLE = { high: { label: "เสี่ยงสูง", bg: "var(--co
 
 const TABS = [
   { key: "dashboard", label: "แดชบอร์ด", icon: "📊" },
+  { key: "feed", label: "ฟีดนักเรียน", icon: "💬" },
   { key: "messages", label: "ข้อความ", icon: "💌" },
   { key: "news", label: "ข่าวสาร", icon: "📰" },
   { key: "settings", label: "ตั้งค่าแอป", icon: "⚙️" },
@@ -29,18 +31,17 @@ export default function TeacherPage() {
   const [replyDrafts, setReplyDrafts] = useState({});
   const [news, setNews] = useState([]);
   const [newsForm, setNewsForm] = useState({ title: "", content: "" });
-  const [settings, setSettings] = useState({});
   const [settingsForm, setSettingsForm] = useState({ app_name: "", logo_emoji: "", announcement: "" });
 
   async function loadAll() {
     const r1 = await fetch("/api/teacher/students");
-    if (r1.ok) setData(await (await r1.json()));
+    if (r1.ok) setData(await r1.json());
     const r2 = await fetch("/api/teacher/messages");
     if (r2.ok) { const d = await r2.json(); setMessages(d.messages || []); }
     const r3 = await fetch("/api/news");
     if (r3.ok) { const d = await r3.json(); setNews(d.news || []); }
     const r4 = await fetch("/api/settings");
-    if (r4.ok) { const d = await r4.json(); setSettings(d.settings || {}); setSettingsForm((f) => ({ ...f, ...d.settings })); }
+    if (r4.ok) { const d = await r4.json(); setSettingsForm((f) => ({ ...f, ...d.settings })); }
   }
 
   useEffect(() => {
@@ -59,6 +60,12 @@ export default function TeacherPage() {
       setAuthed(true);
       await loadAll();
     } catch (err) { setError(err.message); } finally { setLoading(false); }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/teacher/logout", { method: "POST" });
+    setAuthed(false);
+    setPassword("");
   }
 
   async function sendReply(studentId) {
@@ -88,7 +95,6 @@ export default function TeacherPage() {
 
   async function saveSetting(key) {
     await fetch("/api/teacher/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key, value: settingsForm[key] || "" }) });
-    setSettings((s) => ({ ...s, [key]: settingsForm[key] }));
   }
 
   if (!authed) {
@@ -100,163 +106,184 @@ export default function TeacherPage() {
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="รหัสผ่าน" className="card-sm" style={{ width: "100%", padding: "12px 14px", fontSize: 14.5, marginBottom: 14 }} />
           {error && <div style={{ color: "var(--coral)", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>{error}</div>}
           <button type="submit" disabled={loading} className="btn-brut" style={{ width: "100%", padding: 12 }}>{loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}</button>
+          <a href="/" style={{ display: "block", textAlign: "center", marginTop: 14, fontSize: 12, fontWeight: 700, color: "#8a8a8a" }}>← กลับหน้านักเรียน</a>
         </form>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", padding: "24px 16px 50px", display: "flex", justifyContent: "center" }}>
-      <div className="card" style={{ background: "#FFF6E9", width: "100%", maxWidth: 1080, overflow: "hidden" }}>
-        <div style={{ background: "var(--purple)", padding: "22px 26px", borderBottom: "3px solid var(--ink)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <div className="font-display" style={{ fontWeight: 800, fontSize: 18 }}>TUNT Space · แผงควบคุมครูแนะแนว</div>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>Dashboard + Admin Panel</div>
-          </div>
-          {data?.unreadMessages > 0 && (
-            <div className="card-sm" style={{ background: "var(--coral)", padding: "8px 14px", fontSize: 12, fontWeight: 800 }}>
-              🔔 ข้อความใหม่ {data.unreadMessages} รายการ
-            </div>
-          )}
+    <div style={{ minHeight: "100vh" }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "3px solid var(--ink)", background: "#fff" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <a href="/" className="btn-brut" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", fontSize: 16, textDecoration: "none", color: "var(--ink)" }}>←</a>
+          <span className="font-display" style={{ fontWeight: 800, fontSize: 15 }}>TUNT Space · ครูแนะแนว</span>
         </div>
+        <button onClick={handleLogout} className="btn-brut font-display" style={{ padding: "8px 14px", fontSize: 12, background: "var(--coral)" }}>🚪 ออกจากระบบ</button>
+      </header>
 
-        <div style={{ display: "flex", gap: 6, padding: "14px 16px 0", flexWrap: "wrap", borderBottom: "3px solid var(--ink)" }}>
-          {TABS.map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)} className="font-display"
-              style={{
-                padding: "9px 16px", borderRadius: "10px 10px 0 0", fontWeight: 700, fontSize: 12.5, cursor: "pointer",
-                border: "2.5px solid var(--ink)", borderBottom: tab === t.key ? "2.5px solid #FFF6E9" : "2.5px solid var(--ink)",
-                background: tab === t.key ? "#FFF6E9" : "#fff", marginBottom: -3,
-              }}>
-              {t.icon} {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ padding: "22px 26px 30px" }}>
-          {tab === "dashboard" && (
-            <>
-              {data?.flaggedPosts?.length > 0 && (
-                <div style={{ marginBottom: 22 }}>
-                  <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 10 }}>⚠️ โพสต์ที่ระบบตรวจพบคำเสี่ยง</div>
-                  {data.flaggedPosts.map((p) => (
-                    <div key={p.id} className="card-sm" style={{ background: "#FFF1EE", padding: 12, marginBottom: 8 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 700 }}>{p.handle} — {p.full_name} ({p.phone})</div>
-                      <div style={{ fontSize: 12.5, marginTop: 4 }}>{p.content}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 640 }}>
-                  <thead>
-                    <tr>{["บัญชี", "ชื่อ-เบอร์ติดต่อ", "ชั้น", "อารมณ์ล่าสุด", "เช็กอิน 7 วัน", "ความเสี่ยง"].map((h) => (
-                      <th key={h} className="font-display" style={{ textAlign: "left", fontSize: 11, textTransform: "uppercase", padding: "10px 12px", borderBottom: "3px solid var(--ink)" }}>{h}</th>
-                    ))}</tr>
-                  </thead>
-                  <tbody>
-                    {data?.students?.map((s) => {
-                      const risk = riskLevel(s);
-                      return (
-                        <tr key={s.id}>
-                          <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)", fontSize: 11 }}>{s.handle}</td>
-                          <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
-                            <div className="font-display" style={{ fontWeight: 700 }}>{s.full_name}</div>
-                            <div style={{ fontSize: 11.5, color: "#4a4a4a" }}>{s.phone}</div>
-                          </td>
-                          <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.class_room || "—"}</td>
-                          <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.last_mood ? MOOD_LABEL[s.last_mood] : "—"}</td>
-                          <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.checkins_7d} ครั้ง</td>
-                          <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
-                            <span className="font-display" style={{ fontWeight: 800, fontSize: 10.5, padding: "4px 10px", borderRadius: 999, border: "2px solid var(--ink)", background: RISK_STYLE[risk].bg }}>{RISK_STYLE[risk].label}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {(!data?.students || data.students.length === 0) && <div style={{ textAlign: "center", color: "#8a8a8a", padding: 30 }}>ยังไม่มีนักเรียนลงทะเบียน</div>}
-            </>
-          )}
-
-          {tab === "messages" && (
+      <div style={{ padding: "24px 16px 50px", display: "flex", justifyContent: "center" }}>
+        <div className="card" style={{ background: "#FFF6E9", width: "100%", maxWidth: 1080, overflow: "hidden" }}>
+          <div style={{ background: "var(--purple)", padding: "22px 26px", borderBottom: "3px solid var(--ink)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>💌 กล่องข้อความจากนักเรียน</div>
-              {Object.values(
-                messages.reduce((acc, m) => {
-                  acc[m.student_id] = acc[m.student_id] || { student: m, items: [] };
-                  acc[m.student_id].items.push(m);
-                  return acc;
-                }, {})
-              ).map(({ student, items }) => (
-                <div key={student.student_id} className="card-sm" style={{ background: "#fff", padding: 14, marginBottom: 14 }}>
-                  <div className="font-display" style={{ fontWeight: 700, fontSize: 13 }}>{student.full_name} ({student.handle}) — {student.class_room || "—"}</div>
-                  <div style={{ fontSize: 11, color: "#4a4a4a", marginBottom: 8 }}>{student.phone}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
-                    {items.slice().reverse().map((m) => (
-                      <div key={m.id} style={{ fontSize: 12.5, fontWeight: 600, alignSelf: m.sender === "teacher" ? "flex-end" : "flex-start" }}>
-                        <span style={{ color: "#8a8a8a", fontSize: 10 }}>{m.sender === "teacher" ? "ครู" : "นักเรียน"}: </span>{m.content}
+              <div className="font-display" style={{ fontWeight: 800, fontSize: 18 }}>แผงควบคุมครูแนะแนว</div>
+              <div style={{ fontSize: 12, fontWeight: 600 }}>Dashboard + Admin Panel</div>
+            </div>
+            {data?.unreadMessages > 0 && (
+              <div className="card-sm" style={{ background: "var(--coral)", padding: "8px 14px", fontSize: 12, fontWeight: 800 }}>
+                🔔 ข้อความใหม่ {data.unreadMessages} รายการ
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: 6, padding: "14px 16px 0", flexWrap: "wrap", borderBottom: "3px solid var(--ink)" }}>
+            {TABS.map((t) => (
+              <button key={t.key} onClick={() => setTab(t.key)} className="font-display"
+                style={{
+                  padding: "9px 16px", borderRadius: "10px 10px 0 0", fontWeight: 700, fontSize: 12.5, cursor: "pointer",
+                  border: "2.5px solid var(--ink)", borderBottom: tab === t.key ? "2.5px solid #FFF6E9" : "2.5px solid var(--ink)",
+                  background: tab === t.key ? "#FFF6E9" : "#fff", marginBottom: -3,
+                }}>
+                {t.icon} {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ padding: "22px 26px 30px" }}>
+            {tab === "dashboard" && (
+              <>
+                {data?.flaggedPosts?.length > 0 && (
+                  <div style={{ marginBottom: 22 }}>
+                    <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 10 }}>⚠️ โพสต์ที่ระบบตรวจพบคำเสี่ยง</div>
+                    {data.flaggedPosts.map((p) => (
+                      <div key={p.id} className="card-sm" style={{ background: "#FFF1EE", padding: 12, marginBottom: 8 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700 }}>{p.handle} — {p.full_name} ({p.phone})</div>
+                        <div style={{ fontSize: 12.5, marginTop: 4 }}>{p.content}</div>
                       </div>
                     ))}
                   </div>
+                )}
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 640 }}>
+                    <thead>
+                      <tr>{["บัญชี", "ชื่อ-เบอร์ติดต่อ", "ชั้น", "อารมณ์ล่าสุด", "เช็กอิน 7 วัน", "ความเสี่ยง"].map((h) => (
+                        <th key={h} className="font-display" style={{ textAlign: "left", fontSize: 11, textTransform: "uppercase", padding: "10px 12px", borderBottom: "3px solid var(--ink)" }}>{h}</th>
+                      ))}</tr>
+                    </thead>
+                    <tbody>
+                      {data?.students?.map((s) => {
+                        const risk = riskLevel(s);
+                        return (
+                          <tr key={s.id}>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)", fontSize: 11 }}>{s.handle}</td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
+                              <div className="font-display" style={{ fontWeight: 700 }}>{s.full_name}</div>
+                              <div style={{ fontSize: 11.5, color: "#4a4a4a" }}>{s.phone}</div>
+                            </td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.class_room || "—"}</td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.last_mood ? MOOD_LABEL[s.last_mood] : "—"}</td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.checkins_7d} ครั้ง</td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
+                              <span className="font-display" style={{ fontWeight: 800, fontSize: 10.5, padding: "4px 10px", borderRadius: 999, border: "2px solid var(--ink)", background: RISK_STYLE[risk].bg }}>{RISK_STYLE[risk].label}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {(!data?.students || data.students.length === 0) && <div style={{ textAlign: "center", color: "#8a8a8a", padding: 30 }}>ยังไม่มีนักเรียนลงทะเบียน</div>}
+              </>
+            )}
+
+            {tab === "feed" && (
+              <div>
+                <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>💬 ฟีดนักเรียน (มุมมองเดียวกับที่นักเรียนเห็น)</div>
+                <div style={{ fontSize: 12, color: "#4a4a4a", fontWeight: 600, marginBottom: 16 }}>
+                  ครูสามารถกดไลก์ คอมเมนต์ให้กำลังใจได้ — คอมเมนต์ของครูจะแสดงป้าย "ครูแนะแนว" ให้นักเรียนเห็นชัดเจน ครูไม่สามารถโพสต์ใหม่ได้จากหน้านี้
+                </div>
+                <FeedList asTeacher />
+              </div>
+            )}
+
+            {tab === "messages" && (
+              <div>
+                <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>💌 กล่องข้อความจากนักเรียน</div>
+                {Object.values(
+                  messages.reduce((acc, m) => {
+                    acc[m.student_id] = acc[m.student_id] || { student: m, items: [] };
+                    acc[m.student_id].items.push(m);
+                    return acc;
+                  }, {})
+                ).map(({ student, items }) => (
+                  <div key={student.student_id} className="card-sm" style={{ background: "#fff", padding: 14, marginBottom: 14 }}>
+                    <div className="font-display" style={{ fontWeight: 700, fontSize: 13 }}>{student.full_name} ({student.handle}) — {student.class_room || "—"}</div>
+                    <div style={{ fontSize: 11, color: "#4a4a4a", marginBottom: 8 }}>{student.phone}</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+                      {items.slice().reverse().map((m) => (
+                        <div key={m.id} style={{ fontSize: 12.5, fontWeight: 600, alignSelf: m.sender === "teacher" ? "flex-end" : "flex-start" }}>
+                          <span style={{ color: "#8a8a8a", fontSize: 10 }}>{m.sender === "teacher" ? "ครู" : "นักเรียน"}: </span>{m.content}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input value={replyDrafts[student.student_id] || ""} onChange={(e) => setReplyDrafts((d) => ({ ...d, [student.student_id]: e.target.value }))} placeholder="พิมพ์ตอบกลับ..." className="card-sm" style={{ flex: 1, padding: "8px 12px", fontSize: 12.5 }} />
+                      <button onClick={() => sendReply(student.student_id)} className="btn-brut" style={{ padding: "8px 14px", fontSize: 12 }}>ตอบกลับ</button>
+                    </div>
+                  </div>
+                ))}
+                {messages.length === 0 && <div style={{ textAlign: "center", color: "#8a8a8a", padding: 30 }}>ยังไม่มีข้อความ</div>}
+              </div>
+            )}
+
+            {tab === "news" && (
+              <div>
+                <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>📰 จัดการข่าวสาร/กิจกรรม</div>
+                <form onSubmit={addNews} className="card-sm" style={{ background: "#fff", padding: 14, marginBottom: 18 }}>
+                  <input value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder="หัวข้อข่าว" className="card-sm" style={{ width: "100%", padding: "9px 12px", fontSize: 13, marginBottom: 10 }} />
+                  <textarea value={newsForm.content} onChange={(e) => setNewsForm((f) => ({ ...f, content: e.target.value }))} placeholder="รายละเอียด" rows={3} className="card-sm" style={{ width: "100%", padding: "9px 12px", fontSize: 13, marginBottom: 10, fontFamily: "Sarabun" }} />
+                  <button type="submit" className="btn-brut" style={{ padding: "9px 16px", fontSize: 12.5 }}>+ เพิ่มข่าว</button>
+                </form>
+                {news.map((n) => (
+                  <div key={n.id} className="card-sm" style={{ background: "#fff", padding: 13, marginBottom: 10, display: "flex", justifyContent: "space-between", gap: 10 }}>
+                    <div>
+                      <div className="font-display" style={{ fontWeight: 700, fontSize: 13 }}>{n.title}</div>
+                      <div style={{ fontSize: 12, color: "#4a4a4a", marginTop: 3 }}>{n.content}</div>
+                    </div>
+                    <button onClick={() => deleteNews(n.id)} className="btn-brut" style={{ background: "var(--coral)", padding: "6px 12px", fontSize: 11, height: "fit-content" }}>ลบ</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {tab === "settings" && (
+              <div>
+                <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>⚙️ ตั้งค่าแอป</div>
+                <div className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 14 }}>
+                  <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>ชื่อแอป</label>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+                    <input value={settingsForm.app_name || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, app_name: e.target.value }))} placeholder="TUNT Space" className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
+                    <button onClick={() => saveSetting("app_name")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
+                  </div>
+                </div>
+                <div className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 14 }}>
+                  <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>โลโก้ (emoji หรือ URL รูปภาพ)</label>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <input value={replyDrafts[student.student_id] || ""} onChange={(e) => setReplyDrafts((d) => ({ ...d, [student.student_id]: e.target.value }))} placeholder="พิมพ์ตอบกลับ..." className="card-sm" style={{ flex: 1, padding: "8px 12px", fontSize: 12.5 }} />
-                    <button onClick={() => sendReply(student.student_id)} className="btn-brut" style={{ padding: "8px 14px", fontSize: 12 }}>ตอบกลับ</button>
+                    <input value={settingsForm.logo_emoji || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, logo_emoji: e.target.value }))} placeholder="ใจ หรือ https://..." className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
+                    <button onClick={() => saveSetting("logo_emoji")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 6 }}>ยังไม่รองรับอัปโหลดไฟล์รูปโดยตรง — ใช้ลิงก์รูปภาพหรือ emoji ไปก่อน</div>
+                </div>
+                <div className="card-sm" style={{ background: "#fff", padding: 16 }}>
+                  <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>ข้อความประกาศด่วน (ขึ้นหน้าแรกนักเรียน)</label>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input value={settingsForm.announcement || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, announcement: e.target.value }))} placeholder="เช่น วันนี้พบครูแนะแนวได้ที่ห้อง..." className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
+                    <button onClick={() => saveSetting("announcement")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
                   </div>
                 </div>
-              ))}
-              {messages.length === 0 && <div style={{ textAlign: "center", color: "#8a8a8a", padding: 30 }}>ยังไม่มีข้อความ</div>}
-            </div>
-          )}
-
-          {tab === "news" && (
-            <div>
-              <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>📰 จัดการข่าวสาร/กิจกรรม</div>
-              <form onSubmit={addNews} className="card-sm" style={{ background: "#fff", padding: 14, marginBottom: 18 }}>
-                <input value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder="หัวข้อข่าว" className="card-sm" style={{ width: "100%", padding: "9px 12px", fontSize: 13, marginBottom: 10 }} />
-                <textarea value={newsForm.content} onChange={(e) => setNewsForm((f) => ({ ...f, content: e.target.value }))} placeholder="รายละเอียด" rows={3} className="card-sm" style={{ width: "100%", padding: "9px 12px", fontSize: 13, marginBottom: 10, fontFamily: "Sarabun" }} />
-                <button type="submit" className="btn-brut" style={{ padding: "9px 16px", fontSize: 12.5 }}>+ เพิ่มข่าว</button>
-              </form>
-              {news.map((n) => (
-                <div key={n.id} className="card-sm" style={{ background: "#fff", padding: 13, marginBottom: 10, display: "flex", justifyContent: "space-between", gap: 10 }}>
-                  <div>
-                    <div className="font-display" style={{ fontWeight: 700, fontSize: 13 }}>{n.title}</div>
-                    <div style={{ fontSize: 12, color: "#4a4a4a", marginTop: 3 }}>{n.content}</div>
-                  </div>
-                  <button onClick={() => deleteNews(n.id)} className="btn-brut" style={{ background: "var(--coral)", padding: "6px 12px", fontSize: 11, height: "fit-content" }}>ลบ</button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {tab === "settings" && (
-            <div>
-              <div className="font-display" style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>⚙️ ตั้งค่าแอป</div>
-              <div className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 14 }}>
-                <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>ชื่อแอป</label>
-                <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
-                  <input value={settingsForm.app_name || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, app_name: e.target.value }))} placeholder="TUNT Space" className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
-                  <button onClick={() => saveSetting("app_name")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
-                </div>
               </div>
-              <div className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 14 }}>
-                <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>โลโก้ (emoji หรือ URL รูปภาพ)</label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input value={settingsForm.logo_emoji || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, logo_emoji: e.target.value }))} placeholder="ใจ หรือ https://..." className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
-                  <button onClick={() => saveSetting("logo_emoji")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
-                </div>
-                <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 6 }}>v02 ยังไม่รองรับอัปโหลดไฟล์รูปโดยตรง — ใช้ลิงก์รูปภาพหรือ emoji ไปก่อน</div>
-              </div>
-              <div className="card-sm" style={{ background: "#fff", padding: 16 }}>
-                <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>ข้อความประกาศด่วน (ขึ้นหน้าแรกนักเรียน)</label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input value={settingsForm.announcement || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, announcement: e.target.value }))} placeholder="เช่น วันนี้พบครูแนะแนวได้ที่ห้อง..." className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
-                  <button onClick={() => saveSetting("announcement")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

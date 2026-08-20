@@ -14,9 +14,6 @@ export default function ProfilePage() {
   const [color, setColor] = useState("#9B8CFF");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [msgInput, setMsgInput] = useState("");
-  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     fetch("/api/me").then(async (res) => {
@@ -26,15 +23,8 @@ export default function ProfilePage() {
       setNickname(data.student.nickname || "");
       setEmoji(data.student.avatar_emoji || "🙂");
       setColor(data.student.avatar_color || "#9B8CFF");
-      loadMessages();
     });
   }, [router]);
-
-  async function loadMessages() {
-    const r = await fetch("/api/messages");
-    const data = await r.json();
-    if (data.ok) setMessages(data.messages);
-  }
 
   async function handleSave(e) {
     e.preventDefault();
@@ -47,20 +37,6 @@ export default function ProfilePage() {
     });
     setSaving(false);
     setSaved(true);
-  }
-
-  async function handleSendMessage(e) {
-    e.preventDefault();
-    if (!msgInput.trim()) return;
-    setSending(true);
-    await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: msgInput }),
-    });
-    setMsgInput("");
-    await loadMessages();
-    setSending(false);
   }
 
   async function handleLogout() {
@@ -76,8 +52,12 @@ export default function ProfilePage() {
         <div className="card" style={{ width: 90, height: 90, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, marginBottom: 10 }}>
           {emoji}
         </div>
-        <div className="font-display" style={{ fontWeight: 800, fontSize: 16 }}>{student.handle}</div>
-        <div style={{ fontSize: 11.5, color: "#8a8a8a", fontWeight: 600 }}>{student.class_room || "—"}</div>
+        <div className="font-display" style={{ fontWeight: 800, fontSize: 16 }}>{nickname || student.handle}</div>
+        <div style={{ fontSize: 11.5, color: "#8a8a8a", fontWeight: 600 }}>{student.class_room || "—"} · {student.handle}</div>
+      </div>
+
+      <div className="card-sm" style={{ background: "var(--mint)", padding: "12px 14px", fontSize: 12, fontWeight: 600, lineHeight: 1.6, marginBottom: 18 }}>
+        💡 ชื่อเล่นที่ตั้งไว้นี้ จะแสดงในโพสต์และคอมเมนต์ที่พื้นที่ระบายแทนรหัสบัญชี — ชื่อจริงและเบอร์ติดต่อยังคงให้ครูแนะแนวเห็นเท่านั้น
       </div>
 
       <form onSubmit={handleSave} className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 18 }}>
@@ -122,32 +102,9 @@ export default function ProfilePage() {
         </button>
       </form>
 
-      <div className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 18 }}>
-        <div className="font-display" style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 10 }}>💌 ข้อความกับครูแนะแนว</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 220, overflowY: "auto", marginBottom: 12 }}>
-          {messages.length === 0 && <div style={{ fontSize: 12, color: "#8a8a8a", fontWeight: 600 }}>ยังไม่มีข้อความ</div>}
-          {messages.map((m) => (
-            <div key={m.id} style={{ alignSelf: m.sender === "teacher" ? "flex-start" : "flex-end", maxWidth: "85%" }}>
-              <div className="font-display" style={{ fontSize: 9.5, fontWeight: 700, color: "#8a8a8a", marginBottom: 2 }}>
-                {m.sender === "teacher" ? "ครูแนะแนว" : "คุณ"}
-              </div>
-              <div className="card-sm" style={{ padding: "8px 11px", fontSize: 12.5, fontWeight: 600, background: m.sender === "teacher" ? "var(--mint)" : "var(--blue)" }}>
-                {m.content}
-              </div>
-            </div>
-          ))}
-        </div>
-        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 8 }}>
-          <input
-            value={msgInput}
-            onChange={(e) => setMsgInput(e.target.value)}
-            placeholder="พิมพ์ข้อความถึงครู..."
-            className="card-sm"
-            style={{ flex: 1, padding: "9px 12px", fontSize: 12.5 }}
-          />
-          <button type="submit" disabled={sending} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>ส่ง</button>
-        </form>
-      </div>
+      <a href="/chat" className="card-sm" style={{ background: "#fff", padding: "13px 15px", display: "block", textDecoration: "none", color: "var(--ink)", marginBottom: 18 }}>
+        <div className="font-display" style={{ fontWeight: 700, fontSize: 13 }}>💌 ข้อความกับครูแนะแนว / TUNT Bot →</div>
+      </a>
 
       <button onClick={handleLogout} className="btn-brut" style={{ width: "100%", padding: 12, background: "var(--coral)", fontSize: 13.5 }}>
         ออกจากระบบ 🚪

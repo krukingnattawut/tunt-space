@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import FloatingHelp from "./FloatingHelp";
 
 const NAV_ITEMS = [
   { href: "/home", label: "หน้าแรก", icon: "🏠" },
   { href: "/feed", label: "ระบาย", icon: "💬" },
   { href: "/tests", label: "แบบทดสอบ", icon: "🧩" },
-  { href: "/chat", label: "TUNT Bot", icon: "🤖" },
+  { href: "/chat", label: "ช่วยเหลือ", icon: "💌" },
   { href: "/news", label: "ข่าวสาร", icon: "📰" },
   { href: "/profile", label: "โปรไฟล์", icon: "👤" },
 ];
@@ -14,6 +15,11 @@ const NAV_ITEMS = [
 export default function AppShell({ title, showBack = true, children }) {
   const router = useRouter();
   const pathname = usePathname();
+
+  async function handleLogout() {
+    await fetch("/api/logout", { method: "POST" });
+    router.push("/");
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex" }}>
@@ -47,27 +53,48 @@ export default function AppShell({ title, showBack = true, children }) {
             <span style={{ fontSize: 18 }}>{it.icon}</span> {it.label}
           </Link>
         ))}
+
+        <div style={{ flex: 1 }} />
+        <button
+          onClick={handleLogout}
+          className="btn-brut font-display"
+          style={{ background: "#fff", padding: "10px 12px", fontSize: 12.5, display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}
+        >
+          🚪 ออกจากระบบ
+        </button>
       </aside>
 
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "var(--cream, #FFF6E9)" }}>
         <header
           style={{
-            display: "flex", alignItems: "center", gap: 12, padding: "16px 18px",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px",
             borderBottom: "3px solid var(--ink)", background: "#fff", position: "sticky", top: 0, zIndex: 10,
           }}
         >
-          {showBack && (
-            <button
-              onClick={() => router.back()}
-              className="btn-brut"
-              style={{ width: 36, height: 36, padding: 0, background: "#fff", fontSize: 16 }}
-              aria-label="ย้อนกลับ"
-            >
-              ←
-            </button>
-          )}
-          <div className="font-display" style={{ fontWeight: 800, fontSize: 16 }}>{title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {showBack && (
+              <button
+                onClick={() => router.back()}
+                className="btn-brut"
+                style={{ width: 36, height: 36, padding: 0, background: "#fff", fontSize: 16 }}
+                aria-label="ย้อนกลับ"
+              >
+                ←
+              </button>
+            )}
+            <div className="font-display" style={{ fontWeight: 800, fontSize: 16 }}>{title}</div>
+          </div>
+
+          {/* Mobile-only quick logout (desktop uses sidebar button) */}
+          <button
+            onClick={handleLogout}
+            className="btn-brut md:hidden"
+            style={{ width: 36, height: 36, padding: 0, background: "#fff", fontSize: 15 }}
+            aria-label="ออกจากระบบ"
+          >
+            🚪
+          </button>
         </header>
 
         <main style={{ flex: 1, maxWidth: 640, width: "100%", margin: "0 auto", padding: "18px 18px 100px" }}>
@@ -86,6 +113,8 @@ export default function AppShell({ title, showBack = true, children }) {
           </div>
         </div>
       </div>
+
+      {pathname !== "/chat" && <FloatingHelp />}
     </div>
   );
 }

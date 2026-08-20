@@ -59,6 +59,16 @@ export async function GET() {
       );
     `;
     await sql`
+      CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+        student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+        sender TEXT NOT NULL DEFAULT 'student', -- 'student' or 'teacher'
+        content TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+    await sql`
       CREATE TABLE IF NOT EXISTS news (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
@@ -75,10 +85,11 @@ export async function GET() {
 
     await sql`CREATE INDEX IF NOT EXISTS idx_checkins_student ON checkins(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_posts_student ON posts(student_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_messages_student ON messages(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_student ON sessions(student_id);`;
 
-    return NextResponse.json({ ok: true, message: "Database ready (v02 schema)" });
+    return NextResponse.json({ ok: true, message: "Database ready (v03 schema)" });
   } catch (err) {
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }

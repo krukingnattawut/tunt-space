@@ -7,7 +7,13 @@ export async function GET() {
   try {
     const sql = getSql();
     const rows = await sql`
-      SELECT posts.id, posts.content, posts.likes, posts.created_at, students.handle
+      SELECT
+        posts.id, posts.content, posts.likes, posts.created_at,
+        students.handle,
+        COALESCE(students.nickname, students.handle) AS display_name,
+        COALESCE(students.avatar_emoji, '🙂') AS avatar_emoji,
+        COALESCE(students.avatar_color, '#9B8CFF') AS avatar_color,
+        (SELECT COUNT(*) FROM comments c WHERE c.post_id = posts.id) AS comment_count
       FROM posts JOIN students ON students.id = posts.student_id
       ORDER BY posts.created_at DESC LIMIT 50;
     `;
