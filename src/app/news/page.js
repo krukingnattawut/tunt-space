@@ -33,6 +33,9 @@ export default function NewsPage() {
           <div style={{ fontSize: 10.5, color: "#8a8a8a", fontWeight: 600, marginBottom: 8 }}>
             {new Date(n.created_at).toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
           </div>
+          {n.image_url && (
+            <img src={n.image_url} alt={n.title} style={{ maxWidth: "100%", borderRadius: 12, border: "2.5px solid var(--ink)", marginBottom: 10, display: "block" }} />
+          )}
           <div style={{ fontSize: 13, lineHeight: 1.6, fontWeight: 500, whiteSpace: "pre-wrap" }}>{n.content}</div>
         </div>
       ))}

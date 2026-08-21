@@ -43,8 +43,21 @@ export async function GET() {
         id SERIAL PRIMARY KEY,
         student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
         content TEXT NOT NULL,
+        image_url TEXT,
         likes INTEGER DEFAULT 0,
         flagged BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+    await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_url TEXT;`;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+        student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+        sender TEXT NOT NULL DEFAULT 'student',
+        content TEXT NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
@@ -53,18 +66,8 @@ export async function GET() {
         id SERIAL PRIMARY KEY,
         student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
         content TEXT NOT NULL,
-        sender TEXT NOT NULL DEFAULT 'student', -- 'student' or 'teacher'
+        sender TEXT NOT NULL DEFAULT 'student', -- 'student' | 'teacher' | 'system'
         read_by_teacher BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `;
-    await sql`
-      CREATE TABLE IF NOT EXISTS comments (
-        id SERIAL PRIMARY KEY,
-        post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
-        student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
-        sender TEXT NOT NULL DEFAULT 'student', -- 'student' or 'teacher'
-        content TEXT NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
@@ -73,6 +76,19 @@ export async function GET() {
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
+        image_url TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS image_url TEXT;`;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS test_results (
+        id SERIAL PRIMARY KEY,
+        student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+        test_key TEXT NOT NULL,
+        score INTEGER,
+        band TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
@@ -88,8 +104,9 @@ export async function GET() {
     await sql`CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_messages_student ON messages(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_student ON sessions(student_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_test_results_student ON test_results(student_id);`;
 
-    return NextResponse.json({ ok: true, message: "Database ready (v03 schema)" });
+    return NextResponse.json({ ok: true, message: "Database ready (v04 schema)" });
   } catch (err) {
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }

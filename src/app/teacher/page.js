@@ -1,11 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FeedList from "../components/FeedList";
+import { fileToCompressedDataUrl } from "@/lib/imageClient";
 
 const MOOD_LABEL = { great: "😄 สดใส", good: "🙂 ปกติ", neutral: "😐 เฉยๆ", tired: "😔 เหนื่อยใจ", bad: "😢 แย่มาก" };
 
 function riskLevel(s) {
   if (s.flagged_posts > 0) return "high";
+  if (s.sdq_band === "ควรปรึกษาผู้เชี่ยวชาญ" || s.phqa_band === "ควรปรึกษาผู้เชี่ยวชาญโดยเร็ว") return "high";
+  if (s.sdq_band === "เฝ้าระวัง" || s.phqa_band === "ปานกลาง") return "mid";
   if (s.last_mood === "bad" || s.last_mood === "tired") return "mid";
   if (Number(s.checkins_7d) === 0) return "mid";
   return "low";
@@ -31,7 +34,12 @@ export default function TeacherPage() {
   const [replyDrafts, setReplyDrafts] = useState({});
   const [news, setNews] = useState([]);
   const [newsForm, setNewsForm] = useState({ title: "", content: "" });
+  const [newsImage, setNewsImage] = useState(null);
+  const [newsImgError, setNewsImgError] = useState("");
+  const newsFileRef = useRef(null);
   const [settingsForm, setSettingsForm] = useState({ app_name: "", logo_emoji: "", announcement: "" });
+  const [resetResult, setResetResult] = useState(null); // { name, newPassword }
+  const [resetting, setResetting] = useState(null);
 
   async function loadAll() {
     const r1 = await fetch("/api/teacher/students");
@@ -78,14 +86,40 @@ export default function TeacherPage() {
     setMessages(d.messages || []);
   }
 
+  async function handleNewsImage(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewsImgError("");
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file, 1000, 0.75);
+      setNewsImage(dataUrl);
+    } catch (err) {
+      setNewsImgError(err.message);
+    }
+  }
+
   async function addNews(e) {
     e.preventDefault();
     if (!newsForm.title.trim()) return;
-    await fetch("/api/teacher/news", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newsForm) });
+    await fetch("/api/teacher/news", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...newsForm, imageDataUrl: newsImage }) });
     setNewsForm({ title: "", content: "" });
+    setNewsImage(null);
+    if (newsFileRef.current) newsFileRef.current.value = "";
     const r3 = await fetch("/api/news");
     const d = await r3.json();
     setNews(d.news || []);
+  }
+
+  async function resetPassword(studentId, fullName) {
+    if (!confirm(`ตั้งรหัสผ่านใหม่ให้ ${fullName}? รหัสเดิมจะใช้ไม่ได้อีก`)) return;
+    setResetting(studentId);
+    try {
+      const res = await fetch("/api/teacher/reset-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ studentId }) });
+      const json = await res.json();
+      if (json.ok) setResetResult({ name: fullName, newPassword: json.newPassword });
+    } finally {
+      setResetting(null);
+    }
   }
 
   async function deleteNews(id) {
@@ -164,9 +198,9 @@ export default function TeacherPage() {
                   </div>
                 )}
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 640 }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 820 }}>
                     <thead>
-                      <tr>{["บัญชี", "ชื่อ-เบอร์ติดต่อ", "ชั้น", "อารมณ์ล่าสุด", "เช็กอิน 7 วัน", "ความเสี่ยง"].map((h) => (
+                      <tr>{["บัญชี / ไอดี", "ชื่อ-เบอร์ติดต่อ", "ชั้น", "อารมณ์ล่าสุด", "SDQ / PHQ-A", "เช็กอิน 7 วัน", "ความเสี่ยง", ""].map((h) => (
                         <th key={h} className="font-display" style={{ textAlign: "left", fontSize: 11, textTransform: "uppercase", padding: "10px 12px", borderBottom: "3px solid var(--ink)" }}>{h}</th>
                       ))}</tr>
                     </thead>
@@ -175,16 +209,29 @@ export default function TeacherPage() {
                         const risk = riskLevel(s);
                         return (
                           <tr key={s.id}>
-                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)", fontSize: 11 }}>{s.handle}</td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)", fontSize: 11 }}>
+                              <div>{s.handle}</div>
+                              <div style={{ color: "#8a8a8a" }}>@{s.username}</div>
+                            </td>
                             <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
                               <div className="font-display" style={{ fontWeight: 700 }}>{s.full_name}</div>
                               <div style={{ fontSize: 11.5, color: "#4a4a4a" }}>{s.phone}</div>
                             </td>
                             <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.class_room || "—"}</td>
                             <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.last_mood ? MOOD_LABEL[s.last_mood] : "—"}</td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)", fontSize: 11.5 }}>
+                              {s.sdq_band ? <div>SDQ: {s.sdq_band}</div> : null}
+                              {s.phqa_band ? <div>PHQ-A: {s.phqa_band}</div> : null}
+                              {!s.sdq_band && !s.phqa_band && "—"}
+                            </td>
                             <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>{s.checkins_7d} ครั้ง</td>
                             <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
                               <span className="font-display" style={{ fontWeight: 800, fontSize: 10.5, padding: "4px 10px", borderRadius: 999, border: "2px solid var(--ink)", background: RISK_STYLE[risk].bg }}>{RISK_STYLE[risk].label}</span>
+                            </td>
+                            <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
+                              <button onClick={() => resetPassword(s.id, s.full_name)} disabled={resetting === s.id} className="btn-brut" style={{ padding: "6px 10px", fontSize: 10.5, background: "#fff" }}>
+                                {resetting === s.id ? "..." : "🔑 รีเซ็ตรหัสผ่าน"}
+                              </button>
                             </td>
                           </tr>
                         );
@@ -193,6 +240,20 @@ export default function TeacherPage() {
                   </table>
                 </div>
                 {(!data?.students || data.students.length === 0) && <div style={{ textAlign: "center", color: "#8a8a8a", padding: 30 }}>ยังไม่มีนักเรียนลงทะเบียน</div>}
+
+                {resetResult && (
+                  <div onClick={() => setResetResult(null)} style={{ position: "fixed", inset: 0, background: "rgba(20,20,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
+                    <div onClick={(e) => e.stopPropagation()} className="card" style={{ background: "#fff", padding: 26, maxWidth: 360, textAlign: "center" }}>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>🔑</div>
+                      <div className="font-display" style={{ fontWeight: 800, fontSize: 15, marginBottom: 6 }}>ตั้งรหัสผ่านใหม่ให้ {resetResult.name} แล้ว</div>
+                      <div style={{ fontSize: 12, color: "#4a4a4a", fontWeight: 600, marginBottom: 14 }}>แจ้งรหัสนี้ให้นักเรียนด้วยตนเอง (ระบบจะไม่แสดงซ้ำอีก)</div>
+                      <div className="card-sm" style={{ background: "var(--yellow)", padding: "12px 16px", fontFamily: "monospace", fontSize: 18, fontWeight: 800, marginBottom: 16 }}>
+                        {resetResult.newPassword}
+                      </div>
+                      <button onClick={() => setResetResult(null)} className="btn-brut" style={{ width: "100%", padding: 11 }}>รับทราบ</button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
@@ -221,8 +282,11 @@ export default function TeacherPage() {
                     <div style={{ fontSize: 11, color: "#4a4a4a", marginBottom: 8 }}>{student.phone}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
                       {items.slice().reverse().map((m) => (
-                        <div key={m.id} style={{ fontSize: 12.5, fontWeight: 600, alignSelf: m.sender === "teacher" ? "flex-end" : "flex-start" }}>
-                          <span style={{ color: "#8a8a8a", fontSize: 10 }}>{m.sender === "teacher" ? "ครู" : "นักเรียน"}: </span>{m.content}
+                        <div key={m.id} style={{ fontSize: 12.5, fontWeight: 600, alignSelf: m.sender === "student" ? "flex-start" : "flex-end" }}>
+                          <span style={{ color: m.sender === "system" ? "var(--coral)" : "#8a8a8a", fontSize: 10, fontWeight: 800 }}>
+                            {m.sender === "teacher" ? "ครู" : m.sender === "system" ? "⚠️ ระบบ" : "นักเรียน"}:{" "}
+                          </span>
+                          {m.content}
                         </div>
                       ))}
                     </div>
@@ -242,13 +306,27 @@ export default function TeacherPage() {
                 <form onSubmit={addNews} className="card-sm" style={{ background: "#fff", padding: 14, marginBottom: 18 }}>
                   <input value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder="หัวข้อข่าว" className="card-sm" style={{ width: "100%", padding: "9px 12px", fontSize: 13, marginBottom: 10 }} />
                   <textarea value={newsForm.content} onChange={(e) => setNewsForm((f) => ({ ...f, content: e.target.value }))} placeholder="รายละเอียด" rows={3} className="card-sm" style={{ width: "100%", padding: "9px 12px", fontSize: 13, marginBottom: 10, fontFamily: "Sarabun" }} />
-                  <button type="submit" className="btn-brut" style={{ padding: "9px 16px", fontSize: 12.5 }}>+ เพิ่มข่าว</button>
+                  {newsImage && (
+                    <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
+                      <img src={newsImage} alt="preview" style={{ maxHeight: 130, borderRadius: 10, border: "2.5px solid var(--ink)", display: "block" }} />
+                      <button type="button" onClick={() => { setNewsImage(null); if (newsFileRef.current) newsFileRef.current.value = ""; }} style={{ position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "var(--coral)", border: "2px solid var(--ink)", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>✕</button>
+                    </div>
+                  )}
+                  {newsImgError && <div style={{ fontSize: 11, color: "var(--coral)", fontWeight: 700, marginBottom: 8 }}>{newsImgError}</div>}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <label className="font-display" style={{ fontSize: 12, fontWeight: 700, cursor: "pointer", color: "#4a4a4a" }}>
+                      📷 แนบรูปภาพ
+                      <input ref={newsFileRef} type="file" accept="image/*" onChange={handleNewsImage} style={{ display: "none" }} />
+                    </label>
+                    <button type="submit" className="btn-brut" style={{ padding: "9px 16px", fontSize: 12.5 }}>+ เพิ่มข่าว</button>
+                  </div>
                 </form>
                 {news.map((n) => (
                   <div key={n.id} className="card-sm" style={{ background: "#fff", padding: 13, marginBottom: 10, display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <div className="font-display" style={{ fontWeight: 700, fontSize: 13 }}>{n.title}</div>
-                      <div style={{ fontSize: 12, color: "#4a4a4a", marginTop: 3 }}>{n.content}</div>
+                      {n.image_url && <img src={n.image_url} alt={n.title} style={{ maxWidth: 160, borderRadius: 8, border: "2px solid var(--ink)", marginTop: 6 }} />}
+                      <div style={{ fontSize: 12, color: "#4a4a4a", marginTop: 5 }}>{n.content}</div>
                     </div>
                     <button onClick={() => deleteNews(n.id)} className="btn-brut" style={{ background: "var(--coral)", padding: "6px 12px", fontSize: 11, height: "fit-content" }}>ลบ</button>
                   </div>

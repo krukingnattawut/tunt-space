@@ -1,5 +1,6 @@
 import { getSql } from "@/lib/db";
 import { getStudentFromRequest } from "@/lib/auth";
+import { censor } from "@/lib/profanity";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
@@ -30,8 +31,9 @@ export async function POST(req, { params }) {
     const { content } = await req.json();
     if (!content?.trim()) return NextResponse.json({ ok: false, error: "missing content" }, { status: 400 });
     const sql = getSql();
+    const clean = censor(content);
     await sql`
-      INSERT INTO comments (post_id, student_id, sender, content) VALUES (${id}, ${student.id}, 'student', ${content});
+      INSERT INTO comments (post_id, student_id, sender, content) VALUES (${id}, ${student.id}, 'student', ${clean});
     `;
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -1,5 +1,6 @@
 import { getSql } from "@/lib/db";
 import { isTeacherAuthed } from "@/lib/teacherAuth";
+import { censor } from "@/lib/profanity";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -7,8 +8,9 @@ export async function POST(req) {
   const { postId, content } = await req.json();
   if (!postId || !content?.trim()) return NextResponse.json({ ok: false, error: "missing fields" }, { status: 400 });
   const sql = getSql();
+  const clean = censor(content);
   await sql`
-    INSERT INTO comments (post_id, student_id, sender, content) VALUES (${postId}, NULL, 'teacher', ${content});
+    INSERT INTO comments (post_id, student_id, sender, content) VALUES (${postId}, NULL, 'teacher', ${clean});
   `;
   return NextResponse.json({ ok: true });
 }

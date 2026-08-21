@@ -1,9 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { fileToCompressedDataUrl } from "@/lib/imageClient";
 
 export default function FeedList({ asTeacher = false }) {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
+  const [imageDataUrl, setImageDataUrl] = useState(null);
+  const [imgError, setImgError] = useState("");
+  const fileInputRef = useRef(null);
   const [posting, setPosting] = useState(false);
   const [likedIds, setLikedIds] = useState([]);
   const [openComments, setOpenComments] = useState({}); // postId -> bool
@@ -19,17 +23,31 @@ export default function FeedList({ asTeacher = false }) {
     if (data.ok) setPosts(data.posts);
   }
 
+  async function handleImagePick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImgError("");
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file, 800, 0.7);
+      setImageDataUrl(dataUrl);
+    } catch (err) {
+      setImgError(err.message);
+    }
+  }
+
   async function handlePost(e) {
     e.preventDefault();
-    if (!content.trim() || asTeacher) return;
+    if ((!content.trim() && !imageDataUrl) || asTeacher) return;
     setPosting(true);
     try {
       await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, imageDataUrl }),
       });
       setContent("");
+      setImageDataUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       await loadPosts();
     } finally {
       setPosting(false);
@@ -96,10 +114,28 @@ export default function FeedList({ asTeacher = false }) {
             rows={2}
             style={{ width: "100%", border: "none", outline: "none", fontFamily: "Sarabun", fontSize: 13, resize: "none", background: "transparent" }}
           />
-          <button type="submit" disabled={posting} className="btn-brut" style={{ padding: "8px 16px", fontSize: 12.5, float: "right" }}>
-            {posting ? "กำลังโพสต์..." : "โพสต์"}
-          </button>
-          <div style={{ clear: "both" }} />
+          {imageDataUrl && (
+            <div style={{ position: "relative", marginBottom: 10, display: "inline-block" }}>
+              <img src={imageDataUrl} alt="preview" style={{ maxHeight: 140, borderRadius: 10, border: "2.5px solid var(--ink)", display: "block" }} />
+              <button
+                type="button"
+                onClick={() => { setImageDataUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                style={{ position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "var(--coral)", border: "2px solid var(--ink)", cursor: "pointer", fontSize: 12, fontWeight: 700 }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          {imgError && <div style={{ fontSize: 11, color: "var(--coral)", fontWeight: 700, marginBottom: 8 }}>{imgError}</div>}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <label className="font-display" style={{ fontSize: 12, fontWeight: 700, cursor: "pointer", color: "#4a4a4a" }}>
+              📷 แนบรูป
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImagePick} style={{ display: "none" }} />
+            </label>
+            <button type="submit" disabled={posting} className="btn-brut" style={{ padding: "8px 16px", fontSize: 12.5 }}>
+              {posting ? "กำลังโพสต์..." : "โพสต์"}
+            </button>
+          </div>
         </form>
       )}
 
@@ -118,7 +154,10 @@ export default function FeedList({ asTeacher = false }) {
               <div style={{ fontSize: 10, color: "#8a8a8a", fontWeight: 600 }}>{new Date(p.created_at).toLocaleString("th-TH")}</div>
             </div>
           </div>
-          <div style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 10, fontWeight: 500 }}>{p.content}</div>
+          {p.content && <div style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 10, fontWeight: 500 }}>{p.content}</div>}
+          {p.image_url && (
+            <img src={p.image_url} alt="post" style={{ maxWidth: "100%", borderRadius: 12, border: "2.5px solid var(--ink)", marginBottom: 10, display: "block" }} />
+          )}
 
           <div style={{ display: "flex", gap: 16 }}>
             <button

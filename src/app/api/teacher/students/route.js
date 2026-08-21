@@ -9,17 +9,25 @@ export async function GET() {
     const sql = getSql();
     const students = await sql`
       SELECT
-        s.id, s.handle, s.full_name, s.phone, s.class_room, s.nickname,
+        s.id, s.handle, s.username, s.full_name, s.phone, s.class_room, s.nickname,
         lc.mood AS last_mood,
         lc.created_at AS last_checkin_at,
         (SELECT COUNT(*) FROM checkins c WHERE c.student_id = s.id
            AND c.created_at > NOW() - INTERVAL '7 days') AS checkins_7d,
-        (SELECT COUNT(*) FROM posts p WHERE p.student_id = s.id AND p.flagged = TRUE) AS flagged_posts
+        (SELECT COUNT(*) FROM posts p WHERE p.student_id = s.id AND p.flagged = TRUE) AS flagged_posts,
+        sdq.band AS sdq_band,
+        phqa.band AS phqa_band
       FROM students s
       LEFT JOIN LATERAL (
         SELECT mood, created_at FROM checkins
         WHERE student_id = s.id ORDER BY created_at DESC LIMIT 1
       ) lc ON true
+      LEFT JOIN LATERAL (
+        SELECT band FROM test_results WHERE student_id = s.id AND test_key = 'sdq' ORDER BY created_at DESC LIMIT 1
+      ) sdq ON true
+      LEFT JOIN LATERAL (
+        SELECT band FROM test_results WHERE student_id = s.id AND test_key = 'phqa' ORDER BY created_at DESC LIMIT 1
+      ) phqa ON true
       ORDER BY s.created_at DESC;
     `;
 

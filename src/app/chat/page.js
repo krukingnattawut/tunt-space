@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "../components/AppShell";
 import { matchRule } from "@/lib/botRules";
+import { censor } from "@/lib/profanity";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -47,8 +48,9 @@ export default function ChatPage() {
 
   async function sendBotMessage(e) {
     e.preventDefault();
-    const text = botInput.trim();
-    if (!text) return;
+    const raw = botInput.trim();
+    if (!raw) return;
+    const text = censor(raw);
     setBotInput("");
     setBotMessages((m) => [...m, { from: "user", text }]);
 
