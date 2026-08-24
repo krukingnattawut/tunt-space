@@ -1,19 +1,13 @@
 "use client";
+import Logo from "./Logo";
 
 export default function AuthLayout({ children }) {
   return (
     <div className="auth-page">
       <div className="auth-brand-panel">
         <div style={{ textAlign: "center", maxWidth: 380 }}>
-          <div
-            className="card"
-            style={{
-              width: 120, height: 120, borderRadius: 30, background: "#fff",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 26px", transform: "rotate(-4deg)",
-            }}
-          >
-            <span className="font-display" style={{ fontWeight: 800, fontSize: 44, color: "var(--ink)" }}>ใจ</span>
+          <div style={{ margin: "0 auto 26px", transform: "rotate(-4deg)", display: "inline-block" }}>
+            <Logo size={120} radius={30} fontSize={44} bg="#fff" />
           </div>
           <h1 className="font-display" style={{ fontWeight: 800, fontSize: 34, color: "#fff", margin: "0 0 10px", textShadow: "3px 3px 0 var(--ink)" }}>
             TUNT Space

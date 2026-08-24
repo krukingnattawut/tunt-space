@@ -57,7 +57,7 @@ export default function RegisterPage() {
       </div>
 
       <h1 className="font-display" style={{ fontWeight: 800, fontSize: 22, margin: "0 0 4px" }}>สมัครสมาชิก TUNT Space</h1>
-      <p style={{ fontSize: 12.5, color: "#4a4a4a", fontWeight: 600, margin: "0 0 20px" }}>ใช้เวลาไม่ถึงนาที</p>
+      <p style={{ fontSize: 12.5, color: "var(--stage-text-dim)", fontWeight: 600, margin: "0 0 20px" }}>ใช้เวลาไม่ถึงนาที</p>
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 0 }}>
@@ -87,7 +87,7 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <a href="/" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
+      <a href="/" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--coral)" }}>
         มีบัญชีอยู่แล้ว? เข้าสู่ระบบ →
       </a>
     </AuthLayout>

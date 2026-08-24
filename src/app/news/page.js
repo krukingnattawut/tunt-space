@@ -23,7 +23,7 @@ export default function NewsPage() {
   return (
     <AppShell title="📰 ข่าวสารและกิจกรรม">
       {news.length === 0 && (
-        <div style={{ textAlign: "center", color: "#8a8a8a", fontSize: 13, marginTop: 30 }}>
+        <div style={{ textAlign: "center", color: "var(--stage-text-dim)", fontSize: 13, marginTop: 30 }}>
           ยังไม่มีข่าวสาร — ครูแนะแนวจะประกาศที่นี่เมื่อมีอัปเดต 📌
         </div>
       )}

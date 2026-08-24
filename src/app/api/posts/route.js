@@ -9,7 +9,7 @@ export async function GET() {
     const sql = getSql();
     const rows = await sql`
       SELECT
-        posts.id, posts.content, posts.image_url, posts.likes, posts.created_at,
+        posts.id, posts.content, posts.image_url, posts.likes, posts.created_at, posts.student_id,
         students.handle,
         COALESCE(students.nickname, students.handle) AS display_name,
         COALESCE(students.avatar_emoji, '🙂') AS avatar_emoji,

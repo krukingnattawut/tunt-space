@@ -9,18 +9,38 @@ export default function FeedList({ asTeacher = false }) {
   const [imgError, setImgError] = useState("");
   const fileInputRef = useRef(null);
   const [posting, setPosting] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [postError, setPostError] = useState("");
   const [likedIds, setLikedIds] = useState([]);
   const [openComments, setOpenComments] = useState({}); // postId -> bool
   const [comments, setComments] = useState({}); // postId -> array
   const [commentDrafts, setCommentDrafts] = useState({});
   const [toast, setToast] = useState("");
+  const [myStudentId, setMyStudentId] = useState(null);
+
+  useEffect(() => {
+    if (!asTeacher) {
+      fetch("/api/me").then(async (res) => {
+        if (res.ok) { const d = await res.json(); setMyStudentId(d.student.id); }
+      });
+    }
+  }, [asTeacher]);
 
   useEffect(() => { loadPosts(); }, []);
 
   async function loadPosts() {
-    const res = await fetch("/api/posts");
-    const data = await res.json();
-    if (data.ok) setPosts(data.posts);
+    try {
+      const res = await fetch("/api/posts");
+      const data = await res.json();
+      if (data.ok) {
+        setPosts(data.posts);
+        setLoadError("");
+      } else {
+        setLoadError(data.error || "โหลดโพสต์ไม่สำเร็จ");
+      }
+    } catch (err) {
+      setLoadError("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองรีเฟรชหน้าใหม่");
+    }
   }
 
   async function handleImagePick(e) {
@@ -39,16 +59,24 @@ export default function FeedList({ asTeacher = false }) {
     e.preventDefault();
     if ((!content.trim() && !imageDataUrl) || asTeacher) return;
     setPosting(true);
+    setPostError("");
     try {
-      await fetch("/api/posts", {
+      const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, imageDataUrl }),
       });
+      const data = await res.json();
+      if (!data.ok) {
+        setPostError(data.error || "โพสต์ไม่สำเร็จ ลองใหม่อีกครั้ง");
+        return;
+      }
       setContent("");
       setImageDataUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       await loadPosts();
+    } catch (err) {
+      setPostError("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง");
     } finally {
       setPosting(false);
     }
@@ -103,6 +131,12 @@ export default function FeedList({ asTeacher = false }) {
     await loadPosts();
   }
 
+  async function handleDeletePost(id) {
+    if (!confirm("ลบโพสต์นี้?")) return;
+    await fetch(`/api/posts/${id}`, { method: "DELETE" });
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+  }
+
   return (
     <div style={{ position: "relative" }}>
       {!asTeacher && (
@@ -127,6 +161,7 @@ export default function FeedList({ asTeacher = false }) {
             </div>
           )}
           {imgError && <div style={{ fontSize: 11, color: "var(--coral)", fontWeight: 700, marginBottom: 8 }}>{imgError}</div>}
+          {postError && <div style={{ fontSize: 11.5, color: "var(--coral)", fontWeight: 700, marginBottom: 8 }}>⚠️ {postError}</div>}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <label className="font-display" style={{ fontSize: 12, fontWeight: 700, cursor: "pointer", color: "#4a4a4a" }}>
               📷 แนบรูป
@@ -139,7 +174,14 @@ export default function FeedList({ asTeacher = false }) {
         </form>
       )}
 
-      {posts.length === 0 && (
+      {loadError && (
+        <div className="card-sm" style={{ background: "#FFF1EE", padding: "12px 14px", marginBottom: 14, fontSize: 12, fontWeight: 700, color: "var(--coral-deep, #C94E3A)" }}>
+          ⚠️ {loadError}
+          <button onClick={loadPosts} style={{ marginLeft: 10, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>ลองใหม่</button>
+        </div>
+      )}
+
+      {posts.length === 0 && !loadError && (
         <div style={{ textAlign: "center", color: "#8a8a8a", fontSize: 13, marginTop: 30 }}>ยังไม่มีโพสต์</div>
       )}
 
@@ -149,10 +191,20 @@ export default function FeedList({ asTeacher = false }) {
             <div className="card-sm" style={{ width: 32, height: 32, borderRadius: "50%", background: p.avatar_color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>
               {p.avatar_emoji}
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <div className="font-display" style={{ fontWeight: 700, fontSize: 12.5 }}>{p.display_name}</div>
               <div style={{ fontSize: 10, color: "#8a8a8a", fontWeight: 600 }}>{new Date(p.created_at).toLocaleString("th-TH")}</div>
             </div>
+            {(asTeacher || p.student_id === myStudentId) && (
+              <button
+                onClick={() => handleDeletePost(p.id)}
+                className="font-display"
+                title="ลบโพสต์"
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#b0b0b0", opacity: 0.6 }}
+              >
+                🗑️
+              </button>
+            )}
           </div>
           {p.content && <div style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 10, fontWeight: 500 }}>{p.content}</div>}
           {p.image_url && (

@@ -168,6 +168,9 @@ export default function TeacherPage() {
                 🔔 ข้อความใหม่ {data.unreadMessages} รายการ
               </div>
             )}
+            <a href="/api/teacher/export-tests" className="btn-brut font-display" style={{ padding: "8px 14px", fontSize: 12, background: "var(--yellow)", textDecoration: "none", color: "var(--ink)" }}>
+              📊 Export ผลแบบทดสอบ (CSV)
+            </a>
           </div>
 
           <div style={{ display: "flex", gap: 6, padding: "14px 16px 0", flexWrap: "wrap", borderBottom: "3px solid var(--ink)" }}>
@@ -345,12 +348,32 @@ export default function TeacherPage() {
                   </div>
                 </div>
                 <div className="card-sm" style={{ background: "#fff", padding: 16, marginBottom: 14 }}>
-                  <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>โลโก้ (emoji หรือ URL รูปภาพ)</label>
+                  <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>โลโก้แอป</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                    <div className="card-sm" style={{ width: 50, height: 50, background: "var(--coral)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                      {settingsForm.logo_emoji && (settingsForm.logo_emoji.startsWith("data:") || settingsForm.logo_emoji.startsWith("http")) ? (
+                        <img src={settingsForm.logo_emoji} alt="logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span className="font-display" style={{ fontWeight: 800, fontSize: 18 }}>{settingsForm.logo_emoji || "ใจ"}</span>
+                      )}
+                    </div>
+                    <label className="btn-brut font-display" style={{ padding: "8px 14px", fontSize: 11.5, cursor: "pointer", background: "#fff" }}>
+                      📷 อัปโหลดรูปโลโก้
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const dataUrl = await fileToCompressedDataUrl(file, 300, 0.8);
+                          setSettingsForm((f) => ({ ...f, logo_emoji: dataUrl }));
+                        } catch (err) { alert(err.message); }
+                      }} />
+                    </label>
+                  </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <input value={settingsForm.logo_emoji || ""} onChange={(e) => setSettingsForm((f) => ({ ...f, logo_emoji: e.target.value }))} placeholder="ใจ หรือ https://..." className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
+                    <input value={settingsForm.logo_emoji && settingsForm.logo_emoji.startsWith("data:") ? "" : (settingsForm.logo_emoji || "")} onChange={(e) => setSettingsForm((f) => ({ ...f, logo_emoji: e.target.value }))} placeholder="หรือพิมพ์ emoji/ข้อความสั้นแทน เช่น ใจ" className="card-sm" style={{ flex: 1, padding: "9px 12px", fontSize: 13 }} />
                     <button onClick={() => saveSetting("logo_emoji")} className="btn-brut" style={{ padding: "9px 14px", fontSize: 12 }}>บันทึก</button>
                   </div>
-                  <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 6 }}>ยังไม่รองรับอัปโหลดไฟล์รูปโดยตรง — ใช้ลิงก์รูปภาพหรือ emoji ไปก่อน</div>
+                  <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 6 }}>โลโก้นี้จะแสดงในทุกหน้าของแอป ทั้งฝั่งนักเรียนและหน้าเข้าสู่ระบบ</div>
                 </div>
                 <div className="card-sm" style={{ background: "#fff", padding: 16 }}>
                   <label className="font-display" style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>ข้อความประกาศด่วน (ขึ้นหน้าแรกนักเรียน)</label>

@@ -51,14 +51,14 @@ export default function LoginPage() {
           <span className="font-display" style={{ fontWeight: 800, fontSize: 26 }}>ใจ</span>
         </div>
         <h1 className="font-display" style={{ fontWeight: 800, fontSize: 23, margin: "0 0 4px" }}>TUNT Space</h1>
-        <p style={{ fontSize: 13, color: "#4a4a4a", fontWeight: 600, margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13, color: "var(--stage-text-dim)", fontWeight: 600, margin: 0, lineHeight: 1.6 }}>
           พื้นที่เซฟใจของคุณ ✦ Track · Understand · Notify · Treat
         </p>
       </div>
 
       <div className="hidden md:block" style={{ marginBottom: 22 }}>
         <h2 className="font-display" style={{ fontWeight: 800, fontSize: 24, margin: "0 0 6px" }}>เข้าสู่ระบบ</h2>
-        <p style={{ fontSize: 13.5, color: "#4a4a4a", fontWeight: 600, margin: 0 }}>ยินดีต้อนรับกลับมาครับ</p>
+        <p style={{ fontSize: 13.5, color: "var(--stage-text-dim)", fontWeight: 600, margin: 0 }}>ยินดีต้อนรับกลับมาครับ</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -91,10 +91,10 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <a href="/register" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
+      <a href="/register" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--coral)" }}>
         ยังไม่มีบัญชี? สมัครสมาชิก →
       </a>
-      <a href="/teacher" style={{ display: "block", textAlign: "center", marginTop: 10, fontSize: 12, color: "#8a8a8a", fontWeight: 700 }}>
+      <a href="/teacher" style={{ display: "block", textAlign: "center", marginTop: 10, fontSize: 12, color: "var(--stage-text-dim)", fontWeight: 700 }}>
         สำหรับครูแนะแนว →
       </a>
     </AuthLayout>

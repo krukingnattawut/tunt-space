@@ -16,7 +16,7 @@ export default function FeedPage() {
 
   return (
     <AppShell title="💬 พื้นที่ระบาย">
-      <div style={{ fontSize: 12.5, color: "#4a4a4a", marginBottom: 16, fontWeight: 600 }}>
+      <div style={{ fontSize: 12.5, color: "var(--stage-text-dim)", marginBottom: 16, fontWeight: 600 }}>
         ใช้ชื่อเล่นของคุณ · ทุกคนปลอดภัยที่จะพูด
       </div>
       <FeedList />

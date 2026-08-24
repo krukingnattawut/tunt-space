@@ -125,14 +125,14 @@ export default function ChatPage() {
 
       {mode === "bot" && (
         <>
-          <div style={{ fontSize: 11.5, color: "#4a4a4a", marginBottom: 10, fontWeight: 600 }}>
+          <div style={{ fontSize: 11.5, color: "var(--stage-text-dim)", marginBottom: 10, fontWeight: 600 }}>
             บอทนี้จับคำสำคัญที่พิมพ์มาตอบ ไม่ใช่ AI จริง และไม่ใช่ผู้เชี่ยวชาญนะคะ
           </div>
           <div ref={botScrollRef} style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: "48vh", overflowY: "auto", paddingRight: 4, marginBottom: 12 }}>
             {botMessages.map((m, i) => (
               <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: m.from === "user" ? "flex-end" : "flex-start" }}>
                 {m.from === "bot" && (
-                  <span className="font-display" style={{ fontSize: 10, fontWeight: 800, marginBottom: 4, background: m.crisis ? "var(--coral)" : "var(--mint)", padding: "3px 9px", borderRadius: 999, border: "2px solid var(--ink)" }}>TUNT BOT</span>
+                  <span className="font-display" style={{ fontSize: 10, fontWeight: 800, marginBottom: 4, background: m.crisis ? "var(--coral)" : "var(--mint)", padding: "3px 9px", borderRadius: 999, border: "2px solid var(--ink)", color: "var(--ink)" }}>TUNT BOT</span>
                 )}
                 <div className="card-sm" style={{ maxWidth: "82%", padding: "11px 14px", fontSize: 13, lineHeight: 1.55, fontWeight: 600, background: m.from === "user" ? "var(--blue)" : "#fff" }}>
                   {m.text}
@@ -160,15 +160,15 @@ export default function ChatPage() {
 
       {mode === "teacher" && (
         <>
-          <div style={{ fontSize: 11.5, color: "#4a4a4a", marginBottom: 10, fontWeight: 600 }}>
+          <div style={{ fontSize: 11.5, color: "var(--stage-text-dim)", marginBottom: 10, fontWeight: 600 }}>
             ข้อความนี้ส่งถึงครูแนะแนวโดยตรง ครูจะเห็นชื่อจริงของคุณเสมอ
           </div>
           <div ref={teacherScrollRef} style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: "48vh", overflowY: "auto", paddingRight: 4, marginBottom: 12 }}>
-            {teacherMessages.length === 0 && <div style={{ fontSize: 12, color: "#8a8a8a", fontWeight: 600 }}>ยังไม่มีข้อความ ทักทายครูได้เลยค่ะ</div>}
+            {teacherMessages.length === 0 && <div style={{ fontSize: 12, color: "var(--stage-text-dim)", fontWeight: 600 }}>ยังไม่มีข้อความ ทักทายครูได้เลยค่ะ</div>}
             {teacherMessages.map((m) => (
               <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: m.sender === "teacher" ? "flex-start" : "flex-end" }}>
                 {m.sender === "teacher" && (
-                  <span className="font-display" style={{ fontSize: 10, fontWeight: 800, marginBottom: 4, background: "var(--yellow)", padding: "3px 9px", borderRadius: 999, border: "2px solid var(--ink)" }}>ครูแนะแนว</span>
+                  <span className="font-display" style={{ fontSize: 10, fontWeight: 800, marginBottom: 4, background: "var(--yellow)", padding: "3px 9px", borderRadius: 999, border: "2px solid var(--ink)", color: "var(--ink)" }}>ครูแนะแนว</span>
                 )}
                 <div className="card-sm" style={{ maxWidth: "82%", padding: "11px 14px", fontSize: 13, lineHeight: 1.55, fontWeight: 600, background: m.sender === "teacher" ? "var(--mint)" : "var(--blue)" }}>
                   {m.content}
