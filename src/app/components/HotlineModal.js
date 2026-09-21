@@ -37,7 +37,7 @@ export default function HotlineModal({ open, onClose }) {
             </div>
           ))}
         </div>
-        <button onClick={onClose} className="btn-brut" style={{ width: "100%", background: "#fff", padding: 12 }}>
+        <button onClick={onClose} className="btn-brut" style={{ width: "100%", background: "#fff", color: "var(--navy)", border: "2px solid var(--line)", padding: 12 }}>
           ปิดหน้าต่าง
         </button>
       </div>

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthLayout from "../components/AuthLayout";
+import HeartMascot from "../components/HeartMascot";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -48,16 +49,13 @@ export default function RegisterPage() {
   return (
     <AuthLayout>
       <div className="md:hidden" style={{ textAlign: "center", marginBottom: 18 }}>
-        <div
-          className="card"
-          style={{ width: 66, height: 66, borderRadius: 18, background: "var(--coral)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", transform: "rotate(-4deg)" }}
-        >
-          <span className="font-display" style={{ fontWeight: 800, fontSize: 22 }}>ใจ</span>
+        <div style={{ margin: "0 auto 12px" }}>
+          <HeartMascot size={60} />
         </div>
       </div>
 
-      <h1 className="font-display" style={{ fontWeight: 800, fontSize: 22, margin: "0 0 4px" }}>สมัครสมาชิก TUNT Space</h1>
-      <p style={{ fontSize: 12.5, color: "var(--stage-text-dim)", fontWeight: 600, margin: "0 0 20px" }}>ใช้เวลาไม่ถึงนาที</p>
+      <h1 className="font-display" style={{ fontWeight: 700, fontSize: 22, margin: "0 0 4px" }}>สมัครสมาชิก TUNT Space</h1>
+      <p style={{ fontSize: 12.5, color: "var(--text-dim)", fontWeight: 600, margin: "0 0 20px" }}>ใช้เวลาไม่ถึงนาที</p>
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 0 }}>
@@ -76,18 +74,18 @@ export default function RegisterPage() {
           ))}
         </div>
 
-        <div className="card-sm" style={{ background: "var(--mint)", padding: "12px 14px", fontSize: 12, fontWeight: 600, lineHeight: 1.6, margin: "8px 0 20px" }}>
+        <div className="card-sm" style={{ background: "var(--mint-bg)", padding: "12px 14px", fontSize: 12, fontWeight: 600, lineHeight: 1.6, margin: "8px 0 20px" }}>
           🔒 ชื่อและเบอร์ติดต่อ <b>ครูแนะแนวเท่านั้นที่เห็น</b> เพื่อนคนอื่นเห็นคุณเป็นบัญชีไม่ระบุตัวตนเสมอ
         </div>
 
-        {error && <div style={{ color: "var(--coral)", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>{error}</div>}
+        {error && <div style={{ color: "var(--coral-deep)", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>{error}</div>}
 
         <button type="submit" disabled={loading} className="btn-brut" style={{ width: "100%", padding: 14, fontSize: 15 }}>
           {loading ? "กำลังสมัคร..." : "สมัครสมาชิก 🚀"}
         </button>
       </form>
 
-      <a href="/" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--coral)" }}>
+      <a href="/" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--coral-deep)" }}>
         มีบัญชีอยู่แล้ว? เข้าสู่ระบบ →
       </a>
     </AuthLayout>

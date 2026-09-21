@@ -110,14 +110,14 @@ export default function ChatPage() {
         <button
           onClick={() => setMode("bot")}
           className="font-display btn-brut"
-          style={{ flex: 1, padding: "10px 0", fontSize: 12.5, background: mode === "bot" ? "var(--mint)" : "#fff" }}
+          style={{ flex: 1, padding: "10px 0", fontSize: 12.5, background: mode === "bot" ? "var(--mint)" : "#fff", color: "var(--navy)", border: "2px solid var(--line)" }}
         >
           🤖 คุยกับ TUNT Bot
         </button>
         <button
           onClick={() => setMode("teacher")}
           className="font-display btn-brut"
-          style={{ flex: 1, padding: "10px 0", fontSize: 12.5, background: mode === "teacher" ? "var(--blue)" : "#fff" }}
+          style={{ flex: 1, padding: "10px 0", fontSize: 12.5, background: mode === "teacher" ? "var(--blue)" : "#fff", color: "var(--navy)", border: "2px solid var(--line)" }}
         >
           💌 คุยกับครูแนะแนว
         </button>
@@ -125,7 +125,7 @@ export default function ChatPage() {
 
       {mode === "bot" && (
         <>
-          <div style={{ fontSize: 11.5, color: "var(--stage-text-dim)", marginBottom: 10, fontWeight: 600 }}>
+          <div style={{ fontSize: 11.5, color: "var(--text-dim)", marginBottom: 10, fontWeight: 600 }}>
             บอทนี้จับคำสำคัญที่พิมพ์มาตอบ ไม่ใช่ AI จริง และไม่ใช่ผู้เชี่ยวชาญนะคะ
           </div>
           <div ref={botScrollRef} style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: "48vh", overflowY: "auto", paddingRight: 4, marginBottom: 12 }}>
@@ -160,11 +160,11 @@ export default function ChatPage() {
 
       {mode === "teacher" && (
         <>
-          <div style={{ fontSize: 11.5, color: "var(--stage-text-dim)", marginBottom: 10, fontWeight: 600 }}>
+          <div style={{ fontSize: 11.5, color: "var(--text-dim)", marginBottom: 10, fontWeight: 600 }}>
             ข้อความนี้ส่งถึงครูแนะแนวโดยตรง ครูจะเห็นชื่อจริงของคุณเสมอ
           </div>
           <div ref={teacherScrollRef} style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: "48vh", overflowY: "auto", paddingRight: 4, marginBottom: 12 }}>
-            {teacherMessages.length === 0 && <div style={{ fontSize: 12, color: "var(--stage-text-dim)", fontWeight: 600 }}>ยังไม่มีข้อความ ทักทายครูได้เลยค่ะ</div>}
+            {teacherMessages.length === 0 && <div style={{ fontSize: 12, color: "var(--text-dim)", fontWeight: 600 }}>ยังไม่มีข้อความ ทักทายครูได้เลยค่ะ</div>}
             {teacherMessages.map((m) => (
               <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: m.sender === "teacher" ? "flex-start" : "flex-end" }}>
                 {m.sender === "teacher" && (

@@ -104,6 +104,7 @@ export default function TestRunnerPage({ params }) {
                     style={{
                       padding: "8px 14px", fontSize: 12, borderRadius: 999,
                       background: answers[i] === opt.value ? "var(--yellow)" : "#fff",
+                      color: "var(--navy)",
                     }}
                   >
                     {opt.label}
@@ -160,7 +161,7 @@ export default function TestRunnerPage({ params }) {
             </div>
           )}
 
-          <a href="/tests" className="btn-brut" style={{ display: "block", textAlign: "center", padding: 13, textDecoration: "none", color: "var(--ink)" }}>
+          <a href="/tests" className="btn-brut" style={{ display: "block", textAlign: "center", padding: 13, textDecoration: "none", background: "#fff", color: "var(--navy)", border: "2px solid var(--line)" }}>
             ← กลับไปแบบทดสอบอื่น
           </a>
         </div>

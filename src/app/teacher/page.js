@@ -148,9 +148,9 @@ export default function TeacherPage() {
 
   return (
     <div style={{ minHeight: "100vh" }}>
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "3px solid var(--ink)", background: "#fff" }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "2px solid var(--line)", background: "#fff" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <a href="/" className="btn-brut" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", fontSize: 16, textDecoration: "none", color: "var(--ink)" }}>←</a>
+          <a href="/" className="btn-brut" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", fontSize: 16, textDecoration: "none", color: "var(--navy)", border: "2px solid var(--line)" }}>←</a>
           <span className="font-display" style={{ fontWeight: 800, fontSize: 15 }}>TUNT Space · ครูแนะแนว</span>
         </div>
         <button onClick={handleLogout} className="btn-brut font-display" style={{ padding: "8px 14px", fontSize: 12, background: "var(--coral)" }}>🚪 ออกจากระบบ</button>
@@ -232,7 +232,7 @@ export default function TeacherPage() {
                               <span className="font-display" style={{ fontWeight: 800, fontSize: 10.5, padding: "4px 10px", borderRadius: 999, border: "2px solid var(--ink)", background: RISK_STYLE[risk].bg }}>{RISK_STYLE[risk].label}</span>
                             </td>
                             <td style={{ padding: "14px 12px", borderBottom: "2px solid var(--ink)" }}>
-                              <button onClick={() => resetPassword(s.id, s.full_name)} disabled={resetting === s.id} className="btn-brut" style={{ padding: "6px 10px", fontSize: 10.5, background: "#fff" }}>
+                              <button onClick={() => resetPassword(s.id, s.full_name)} disabled={resetting === s.id} className="btn-brut" style={{ padding: "6px 10px", fontSize: 10.5, background: "#fff", color: "var(--navy)", border: "2px solid var(--line)" }}>
                                 {resetting === s.id ? "..." : "🔑 รีเซ็ตรหัสผ่าน"}
                               </button>
                             </td>
@@ -357,7 +357,7 @@ export default function TeacherPage() {
                         <span className="font-display" style={{ fontWeight: 800, fontSize: 18 }}>{settingsForm.logo_emoji || "ใจ"}</span>
                       )}
                     </div>
-                    <label className="btn-brut font-display" style={{ padding: "8px 14px", fontSize: 11.5, cursor: "pointer", background: "#fff" }}>
+                    <label className="btn-brut font-display" style={{ padding: "8px 14px", fontSize: 11.5, cursor: "pointer", background: "#fff", color: "var(--navy)", border: "2px solid var(--line)" }}>
                       📷 อัปโหลดรูปโลโก้
                       <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
                         const file = e.target.files?.[0];

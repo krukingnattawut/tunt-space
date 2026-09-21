@@ -101,6 +101,15 @@ export async function GET() {
       );
     `;
     await sql`
+      CREATE TABLE IF NOT EXISTS game_sessions (
+        id SERIAL PRIMARY KEY,
+        student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+        game_key TEXT NOT NULL,
+        score INTEGER,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+    await sql`
       CREATE TABLE IF NOT EXISTS app_settings (
         key TEXT PRIMARY KEY,
         value TEXT
@@ -114,8 +123,9 @@ export async function GET() {
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_student ON sessions(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_test_results_student ON test_results(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_gratitude_student ON gratitude_entries(student_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_games_student ON game_sessions(student_id);`;
 
-    return NextResponse.json({ ok: true, message: "Database ready (v05 schema)" });
+    return NextResponse.json({ ok: true, message: "Database ready (v09 schema)" });
   } catch (err) {
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }

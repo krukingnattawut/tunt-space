@@ -23,7 +23,7 @@ export default function TestsPage() {
 
   return (
     <AppShell title="🧩 รู้จักตัวเอง">
-      <div style={{ fontSize: 12.5, color: "var(--stage-text-dim)", marginBottom: 20, fontWeight: 600 }}>
+      <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 20, fontWeight: 600 }}>
         เลือกแบบทดสอบที่สนใจ ใช้เวลาไม่ถึง 5 นาที
       </div>
 
@@ -41,12 +41,12 @@ export default function TestsPage() {
                   className="card scroll-card"
                   style={{ width: 168, background: "#fff", padding: 0, overflow: "hidden", display: "block", textDecoration: "none" }}
                 >
-                  <div style={{ height: 84, background: t.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, borderBottom: "3px solid var(--ink)" }}>
+                  <div style={{ height: 84, background: t.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34 }}>
                     {t.icon}
                   </div>
                   <div style={{ padding: "12px 13px" }}>
-                    <div className="font-display" style={{ fontWeight: 700, fontSize: 12.5, lineHeight: 1.4, marginBottom: 4 }}>{t.title}</div>
-                    <div style={{ fontSize: 10.5, color: "#6a6a6a", fontWeight: 500 }}>{t.questions.length} คำถาม</div>
+                    <div className="font-display" style={{ fontWeight: 600, fontSize: 12.5, lineHeight: 1.4, marginBottom: 4, color: "var(--navy)" }}>{t.title}</div>
+                    <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontWeight: 500 }}>{t.questions.length} คำถาม</div>
                   </div>
                 </a>
               ))}

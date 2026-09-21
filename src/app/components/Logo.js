@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import HeartMascot from "./HeartMascot";
 
-export default function Logo({ size = 38, radius = 12, fontSize = 16, rotate = 0, bg = "var(--coral)" }) {
-  const [logo, setLogo] = useState(null); // null = not loaded yet, "" = use default
+export default function Logo({ size = 38, radius = 12, rotate = 0, bg = "var(--yellow)" }) {
+  const [logo, setLogo] = useState(null);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -12,22 +13,23 @@ export default function Logo({ size = 38, radius = 12, fontSize = 16, rotate = 0
   }, []);
 
   const isImage = logo && (logo.startsWith("data:") || logo.startsWith("http"));
+  const isCustomText = logo && !isImage;
 
   return (
     <div
-      className="card-sm"
       style={{
         width: size, height: size, borderRadius: radius, background: bg,
         display: "flex", alignItems: "center", justifyContent: "center",
         overflow: "hidden", flexShrink: 0, transform: rotate ? `rotate(${rotate}deg)` : undefined,
+        border: "2px solid var(--navy)",
       }}
     >
       {isImage ? (
         <img src={logo} alt="logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : isCustomText ? (
+        <span className="font-display" style={{ fontWeight: 700, fontSize: size * 0.42, color: "var(--navy)" }}>{logo}</span>
       ) : (
-        <span className="font-display" style={{ fontWeight: 800, fontSize, color: "var(--ink)" }}>
-          {logo && logo.trim() ? logo : "ใจ"}
-        </span>
+        <HeartMascot size={size * 0.66} />
       )}
     </div>
   );

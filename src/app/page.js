@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthLayout from "./components/AuthLayout";
+import HeartMascot from "./components/HeartMascot";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,23 +43,19 @@ export default function LoginPage() {
 
   return (
     <AuthLayout>
-      {/* Mobile-only brand mark (desktop shows the left brand panel instead) */}
       <div className="md:hidden" style={{ textAlign: "center", marginBottom: 22 }}>
-        <div
-          className="card"
-          style={{ width: 78, height: 78, borderRadius: 20, background: "var(--coral)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", transform: "rotate(-4deg)" }}
-        >
-          <span className="font-display" style={{ fontWeight: 800, fontSize: 26 }}>ใจ</span>
+        <div style={{ margin: "0 auto 14px" }}>
+          <HeartMascot size={70} />
         </div>
-        <h1 className="font-display" style={{ fontWeight: 800, fontSize: 23, margin: "0 0 4px" }}>TUNT Space</h1>
-        <p style={{ fontSize: 13, color: "var(--stage-text-dim)", fontWeight: 600, margin: 0, lineHeight: 1.6 }}>
+        <h1 className="font-display" style={{ fontWeight: 700, fontSize: 22, margin: "0 0 4px" }}>TUNT Space</h1>
+        <p style={{ fontSize: 13, color: "var(--text-dim)", fontWeight: 600, margin: 0, lineHeight: 1.6 }}>
           พื้นที่เซฟใจของคุณ ✦ Track · Understand · Notify · Treat
         </p>
       </div>
 
       <div className="hidden md:block" style={{ marginBottom: 22 }}>
-        <h2 className="font-display" style={{ fontWeight: 800, fontSize: 24, margin: "0 0 6px" }}>เข้าสู่ระบบ</h2>
-        <p style={{ fontSize: 13.5, color: "var(--stage-text-dim)", fontWeight: 600, margin: 0 }}>ยินดีต้อนรับกลับมาครับ</p>
+        <h2 className="font-display" style={{ fontWeight: 700, fontSize: 24, margin: "0 0 6px" }}>เข้าสู่ระบบ</h2>
+        <p style={{ fontSize: 13.5, color: "var(--text-dim)", fontWeight: 600, margin: 0 }}>ยินดีต้อนรับกลับมาครับ</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -84,17 +81,17 @@ export default function LoginPage() {
           />
         </div>
 
-        {error && <div style={{ color: "var(--coral)", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>{error}</div>}
+        {error && <div style={{ color: "var(--coral-deep)", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>{error}</div>}
 
         <button type="submit" disabled={loading} className="btn-brut" style={{ width: "100%", padding: 14, fontSize: 15 }}>
           {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ 🔑"}
         </button>
       </form>
 
-      <a href="/register" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--coral)" }}>
+      <a href="/register" style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: 12.5, fontWeight: 700, color: "var(--coral-deep)" }}>
         ยังไม่มีบัญชี? สมัครสมาชิก →
       </a>
-      <a href="/teacher" style={{ display: "block", textAlign: "center", marginTop: 10, fontSize: 12, color: "var(--stage-text-dim)", fontWeight: 700 }}>
+      <a href="/teacher" style={{ display: "block", textAlign: "center", marginTop: 10, fontSize: 12, color: "var(--text-dim)", fontWeight: 700 }}>
         สำหรับครูแนะแนว →
       </a>
     </AuthLayout>

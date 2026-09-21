@@ -53,7 +53,7 @@ export default function ProfilePage() {
           {emoji}
         </div>
         <div className="font-display" style={{ fontWeight: 800, fontSize: 16 }}>{nickname || student.handle}</div>
-        <div style={{ fontSize: 11.5, color: "var(--stage-text-dim)", fontWeight: 600 }}>{student.class_room || "—"} · {student.handle}</div>
+        <div style={{ fontSize: 11.5, color: "var(--text-dim)", fontWeight: 600 }}>{student.class_room || "—"} · {student.handle}</div>
       </div>
 
       <div className="card-sm" style={{ background: "var(--mint)", padding: "12px 14px", fontSize: 12, fontWeight: 600, lineHeight: 1.6, marginBottom: 18 }}>
